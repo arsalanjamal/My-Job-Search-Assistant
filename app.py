@@ -1,6 +1,9 @@
 import streamlit as st
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 import time
 from io import StringIO
@@ -21,13 +24,17 @@ experience = st.selectbox("Experience Level:", ["Any", "Entry-level", "Mid-level
 
 # Function to scrape job listings from Indeed
 def scrape_jobs(query, location, experience):
-    base_url = "https://www.indeed.com/jobs"
+    base_url = "https://www.indeed.com"
     search_url = f"{base_url}?q={query}&l={location}"
     
     # Setup WebDriver (using Chrome)
-    options = webdriver.ChromeOptions()
+    options = Options()
     options.add_argument('--headless')  # Run headless for better performance
-    driver = webdriver.Chrome(options=options)
+    options.add_argument("--disable-gpu")  # Disable GPU for headless mode
+    options.add_argument("--no-sandbox")  # Disable sandbox mode for cloud environments
+
+    # Use WebDriver Manager to manage ChromeDriver
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     driver.get(search_url)
 
     # Wait for page to load
@@ -35,8 +42,11 @@ def scrape_jobs(query, location, experience):
 
     # Filter by experience level if applicable
     if experience != "Any":
-        driver.find_element(By.LINK_TEXT, experience).click()
-        time.sleep(2)
+        try:
+            driver.find_element(By.LINK_TEXT, experience).click()
+            time.sleep(2)
+        except:
+            pass  # If the filter isn't found, we continue
 
     jobs = []
 
