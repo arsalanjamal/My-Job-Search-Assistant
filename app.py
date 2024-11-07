@@ -14,16 +14,15 @@ st.set_page_config(page_title="Job Search Assistant", layout="wide")
 # Title and description
 st.title("Job Search Assistant")
 st.markdown("""
-This assistant helps you find job listings from Indeed based on your query. You can enter a job title or skill, and it will show relevant jobs with title, company, salary (if available), and a link to apply. You can also filter by location and experience level.
+This assistant helps you find job listings from Indeed based on your query. You can enter a job title or skill, and it will show relevant jobs with title, company, salary (if available), and a link to apply. You can also filter by location.
 """)
 
-# Input fields for user query and filters
+# Input fields for user query
 job_title = st.text_input("Enter the job title or skill:", "")
 location = st.text_input("Enter location (e.g., New York, Remote):", "")
-experience = st.selectbox("Experience Level:", ["Any", "Entry-level", "Mid-level", "Senior-level"])
 
 # Function to scrape job listings from Indeed
-def scrape_jobs(query, location, experience):
+def scrape_jobs(query, location):
     base_url = "https://www.indeed.com"
     search_url = f"{base_url}?q={query}&l={location}"
     
@@ -39,14 +38,6 @@ def scrape_jobs(query, location, experience):
 
     # Wait for page to load
     time.sleep(3)
-
-    # Filter by experience level if applicable
-    if experience != "Any":
-        try:
-            driver.find_element(By.LINK_TEXT, experience).click()
-            time.sleep(2)
-        except:
-            pass  # If the filter isn't found, we continue
 
     jobs = []
 
@@ -67,7 +58,9 @@ def scrape_jobs(query, location, experience):
         })
     
     driver.quit()  # Close the driver after scraping is done
-    return jobs
+    
+    # Return top 10 most recent jobs
+    return jobs[:10]
 
 # Function to export job results to CSV
 def export_to_csv(jobs):
@@ -81,7 +74,7 @@ def main():
     if st.button("Search Jobs"):
         if job_title:
             with st.spinner("Searching for jobs..."):
-                jobs = scrape_jobs(job_title, location, experience)
+                jobs = scrape_jobs(job_title, location)
                 
                 if jobs:
                     st.success(f"Found {len(jobs)} job listings!")
