@@ -25,7 +25,7 @@ location = st.text_input("Enter location (e.g., New York, Remote):", "")
 def scrape_jobs(query, location):
     base_url = "https://www.indeed.com"
     search_url = f"{base_url}?q={query}&l={location}"
-    
+
     # Setup WebDriver (using Chrome)
     options = Options()
     options.add_argument('--headless')  # Run headless for better performance
@@ -58,7 +58,7 @@ def scrape_jobs(query, location):
         })
     
     driver.quit()  # Close the driver after scraping is done
-    
+
     # Return top 10 most recent jobs
     return jobs[:10]
 
@@ -75,7 +75,7 @@ def main():
         if job_title:
             with st.spinner("Searching for jobs..."):
                 jobs = scrape_jobs(job_title, location)
-                
+
                 if jobs:
                     st.success(f"Found {len(jobs)} job listings!")
                     for job in jobs:
@@ -83,7 +83,7 @@ def main():
                         st.write(f"**Company**: {job['Company']}")
                         st.write(f"**Salary**: {job['Salary']}")
                         st.write(f"[Apply Here]({job['Link to Apply']})\n")
-                    
+
                     # Option to download the job listings as CSV
                     csv_data = export_to_csv(jobs)
                     st.download_button(label="Download Job Listings as CSV", data=csv_data, file_name="job_listings.csv")
